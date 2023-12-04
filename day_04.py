@@ -25,7 +25,11 @@ raw = aoc_helper.fetch(4, 2023)
 
 
 def parse_raw(raw: str):
-    return ...
+    return (
+        list(raw.splitlines())
+        .mapped(lambda line: line.split(": ")[1].split(" | "))
+        .mapped_each(extract_ints)
+    )
 
 
 data = parse_raw(raw)
@@ -35,7 +39,15 @@ data = parse_raw(raw)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_one(data=data):
-    ...
+    points = 0
+    for card in data:
+        winning, have = card
+        winning = set[int](winning)
+        have = set[int](have)
+        have_winning = winning & have
+        if len(have_winning) != 0:
+            points += 2 ** (len(have_winning) - 1)
+    return points
 
 
 aoc_helper.lazy_test(day=4, year=2023, parse=parse_raw, solution=part_one)
@@ -45,7 +57,15 @@ aoc_helper.lazy_test(day=4, year=2023, parse=parse_raw, solution=part_one)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_two(data=data):
-    ...
+    copies = [1 for _ in data]
+    for i, (card, n_copies) in enumerate(zip(data, copies)):
+        winning, have = card
+        winning = set[int](winning)
+        have = set[int](have)
+        have_winning = winning & have
+        for card in range(i + 1, len(have_winning) + i + 1):
+            copies[card] += n_copies
+    return sum(copies)
 
 
 aoc_helper.lazy_test(day=4, year=2023, parse=parse_raw, solution=part_two)
