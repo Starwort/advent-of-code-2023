@@ -44,7 +44,6 @@ def part_one(data=data):
             if speed > distance:
                 wins += 1
         total *= wins
-        print(f"{wins} for {distance}, {time}")
     return total
 
 
