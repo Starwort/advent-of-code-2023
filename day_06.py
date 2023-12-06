@@ -25,7 +25,8 @@ raw = aoc_helper.fetch(6, 2023)
 
 
 def parse_raw(raw: str):
-    return ...
+    nums = extract_ints(raw)
+    return nums.chunked(nums.len() // 2)
 
 
 data = parse_raw(raw)
@@ -35,7 +36,16 @@ data = parse_raw(raw)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_one(data=data):
-    ...
+    total = 1
+    for time, distance in zip(*data):
+        wins = 0
+        for hold in range(time):
+            speed = hold * (time - hold)
+            if speed > distance:
+                wins += 1
+        total *= wins
+        print(f"{wins} for {distance}, {time}")
+    return total
 
 
 aoc_helper.lazy_test(day=6, year=2023, parse=parse_raw, solution=part_one)
@@ -45,7 +55,14 @@ aoc_helper.lazy_test(day=6, year=2023, parse=parse_raw, solution=part_one)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_two(data=data):
-    ...
+    time = int("".join(map(str, data[0])))
+    distance = int("".join(map(str, data[1])))
+    wins = 0
+    for hold in range(time):
+        speed = hold * (time - hold)
+        if speed > distance:
+            wins += 1
+    return wins
 
 
 aoc_helper.lazy_test(day=6, year=2023, parse=parse_raw, solution=part_two)
