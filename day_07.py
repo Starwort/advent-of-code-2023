@@ -70,7 +70,6 @@ aoc_helper.lazy_test(day=7, year=2023, parse=parse_raw, solution=part_one)
 def strength2(hand: list[str]):
     hand_innate_strength = hand.mapped(lambda i: "J23456789TQKA".index(i))
     strongest_hand = strength(hand)[0]
-    n_jacks = hand.count(item="J")
     for jack_replacement in "23456789TQKA":
         if jack_replacement not in hand:
             continue
