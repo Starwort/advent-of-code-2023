@@ -71,18 +71,13 @@ def strength2(hand: list[str]):
     hand_innate_strength = hand.mapped(lambda i: "J23456789TQKA".index(i))
     strongest_hand = strength(hand)[0]
     n_jacks = hand.count(item="J")
-    for replacement_cards in iter("23456789TQKA").combinations_with_replacement(
-        n_jacks
-    ):
-        new_hand = hand.copy()
-        for card in replacement_cards:
-            new_hand.remove("J")
-            new_hand.append(card)
+    for jack_replacement in "23456789TQKA":
+        if jack_replacement not in hand:
+            continue
+        new_hand = hand.mapped(lambda i: jack_replacement if i == "J" else i)
         new_hand_strength = strength(new_hand)[0]
         if new_hand_strength > strongest_hand:
             strongest_hand = new_hand_strength
-        if strongest_hand == 5:
-            break
     return strongest_hand, hand_innate_strength
 
 
