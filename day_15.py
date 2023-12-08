@@ -1,5 +1,4 @@
-from collections import defaultdict, deque
-from typing import TYPE_CHECKING
+from collections import defaultdict, deque, Counter
 
 import aoc_helper
 from aoc_helper import (
@@ -17,6 +16,7 @@ from aoc_helper import (
     list,
     map,
     range,
+    multirange,
     search,
     tail_call,
 )
