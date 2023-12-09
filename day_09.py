@@ -1,4 +1,4 @@
-from collections import defaultdict, deque, Counter
+from collections import Counter, defaultdict, deque
 
 import aoc_helper
 from aoc_helper import (
@@ -15,8 +15,8 @@ from aoc_helper import (
     iter,
     list,
     map,
-    range,
     multirange,
+    range,
     search,
     tail_call,
 )
@@ -49,19 +49,11 @@ def part_one(data=data):
 aoc_helper.lazy_test(day=9, year=2023, parse=parse_raw, solution=part_one)
 
 
-def history2(row: list[int]) -> int:
-    diffs = row.windowed(2).starmapped(lambda a, b: b - a)
-    if all(i == 0 for i in diffs):
-        return row[0]
-    else:
-        return row[0] - history2(diffs)
-
-
 # providing this default is somewhat of a hack - there isn't any other way to
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_two(data=data):
-    return data.mapped(history2).sum()
+    return data.mapped(lambda i: i[::-1]).mapped(history).sum()
 
 
 aoc_helper.lazy_test(day=9, year=2023, parse=parse_raw, solution=part_two)
