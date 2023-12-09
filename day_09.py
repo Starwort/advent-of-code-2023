@@ -43,10 +43,7 @@ def history(row: list[int]) -> int:
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_one(data=data):
-    total = 0
-    for row in data:
-        total += history(row)
-    return total
+    return data.mapped(history).sum()
 
 
 aoc_helper.lazy_test(day=9, year=2023, parse=parse_raw, solution=part_one)
@@ -64,10 +61,7 @@ def history2(row: list[int]) -> int:
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_two(data=data):
-    total = 0
-    for row in data:
-        total += history2(row)
-    return total
+    return data.mapped(history2).sum()
 
 
 aoc_helper.lazy_test(day=9, year=2023, parse=parse_raw, solution=part_two)
