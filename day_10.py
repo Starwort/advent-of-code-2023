@@ -25,9 +25,11 @@ raw = aoc_helper.fetch(10, 2023)
 
 
 def parse_raw(raw: str):
-    start_ = list(raw.splitlines()).enumerated().find(lambda i: i[1].find("S") != -1)
+    lines = list(raw.splitlines())
+    start_ = lines.enumerated().find(lambda i: i[1].find("S") != -1)
     assert start_ is not None
-    start: tuple[int, int] = start_[0], start_[1].index("S")
+    start: tuple[int, int] = start_[1].index("S"), start_[0]
+    x, y = start
 
     def classify(cell: str) -> tuple[bool, bool, bool, bool]:
         match cell:
@@ -46,7 +48,11 @@ def parse_raw(raw: str):
             case "F":
                 return (False, True, True, False)
             case "S":
-                return (True, False, True, False)  # by inspection
+                up = y > 0 and classify(lines[y - 1][x])[2]
+                left = x > 0 and classify(lines[y][x - 1])[1]
+                down = y < len(lines) - 1 and classify(lines[y + 1][x])[0]
+                right = x < len(lines[0]) - 1 and classify(lines[y][x + 1])[3]
+                return (up, right, down, left)
             case _:
                 return (False, False, False, False)
 
@@ -71,12 +77,9 @@ def unclassify(cell: tuple[bool, bool, bool, bool]) -> str:
 data: tuple[tuple[int, int], Grid[tuple[bool, bool, bool, bool]]] = parse_raw(raw)
 
 
-# providing this default is somewhat of a hack - there isn't any other way to
-# force type inference to happen, AFAIK - but this won't work with standard
-# collections (list, set, dict, tuple)
-def part_one(data: tuple[tuple[int, int], Grid[tuple[bool, bool, bool, bool]]] = data):
-    (y, x), grid = data
-    start = (x, y)
+def explore(
+    grid: Grid[tuple[bool, bool, bool, bool]], start: tuple[int, int]
+) -> dict[tuple[int, int], int]:
     to_search = deque[tuple[int, int, int]]([start + (0,)])
     seen = {}
     while to_search:
@@ -85,22 +88,23 @@ def part_one(data: tuple[tuple[int, int], Grid[tuple[bool, bool, bool, bool]]] =
             continue
         seen[x, y] = dist
         up, right, down, left = grid[y][x]
-        did_append = False
         if up:
             to_search.append((x, y - 1, dist + 1))
-            did_append = True
         if right:
             to_search.append((x + 1, y, dist + 1))
-            did_append = True
         if down:
             to_search.append((x, y + 1, dist + 1))
-            did_append = True
         if left:
             to_search.append((x - 1, y, dist + 1))
-            did_append = True
-        if not did_append:
-            print("dead end at", x, y)
-            seen[x, y] = 0  # dead end
+    return seen
+
+
+# providing this default is somewhat of a hack - there isn't any other way to
+# force type inference to happen, AFAIK - but this won't work with standard
+# collections (list, set, dict, tuple)
+def part_one(data: tuple[tuple[int, int], Grid[tuple[bool, bool, bool, bool]]] = data):
+    start, grid = data
+    seen = explore(grid, start)
     return max(seen.values())
 
 
@@ -111,26 +115,9 @@ aoc_helper.lazy_test(day=10, year=2023, parse=parse_raw, solution=part_one)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_two(data: tuple[tuple[int, int], Grid[tuple[bool, bool, bool, bool]]] = data):
-    (y, x), grid = data
-    start = (x, y)
-    to_search = deque[tuple[int, int, int]]([start + (0,)])
-    seen = {}
-    while to_search:
-        x, y, dist = to_search.popleft()
-        if (x, y) in seen:
-            continue
-        seen[x, y] = dist
-        up, right, down, left = grid[y][x]
-        if up:
-            to_search.append((x, y - 1, dist + 1))
-        if right:
-            to_search.append((x + 1, y, dist + 1))
-        if down:
-            to_search.append((x, y + 1, dist + 1))
-        if left:
-            to_search.append((x - 1, y, dist + 1))
+    start, grid = data
     big_grid = SparseGrid(bool)
-    for x, y in seen:
+    for x, y in explore(grid, start):
         up, right, down, left = grid[y][x]
         x *= 2
         y *= 2
@@ -171,12 +158,11 @@ def part_two(data: tuple[tuple[int, int], Grid[tuple[bool, bool, bool, bool]]] =
 
     x, y = start
 
-    area = flood_fill(2 * x + 1, 2 * y)
-    if area is None:
-        area = flood_fill(2 * x - 1, 2 * y)
-    if area is None:
-        raise RuntimeError("couldn't find area")
-    return area
+    for ox, oy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+        area = flood_fill(2 * x + ox, 2 * y + oy)
+        if area is not None:
+            return area
+    raise RuntimeError("couldn't find area")
 
 
 for test_data in [
