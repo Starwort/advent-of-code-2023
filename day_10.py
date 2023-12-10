@@ -52,7 +52,7 @@ def parse_raw(raw: str):
 
     grid = Grid.from_string(raw, classify)
 
-    return start, grid  # type: ignore
+    return start, grid
 
 
 def unclassify(cell: tuple[bool, bool, bool, bool]) -> str:
