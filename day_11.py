@@ -35,52 +35,7 @@ data = parse_raw(raw)
 # providing this default is somewhat of a hack - there isn't any other way to
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
-def part_one(data=data):
-    empty_cols = set()
-    empty_rows = set()
-    for y, row in enumerate(data.data):
-        if row.count(1) == 0:
-            empty_rows.add(y)
-    for col in range(data[0].len()):
-        if all(row[col] == 0 for row in data.data):
-            empty_cols.add(col)
-    new_grid = Grid[int](
-        list(
-            list(0 for x in range(data.data[0].len() + len(empty_cols)))
-            for y in range(data.data.len() + len(empty_rows))
-        )
-    )
-    real_y = 0
-    for y, row in enumerate(data.data):
-        if y in empty_rows:
-            real_y += 2
-            continue
-        real_x = 0
-        for x, cell in enumerate(row):
-            if x in empty_cols:
-                real_x += 2
-                continue
-            new_grid[real_y][real_x] = cell
-            real_x += 1
-        real_y += 1
-    all_points = set()
-    for y, row in enumerate(new_grid.data):
-        for x, cell in enumerate(row):
-            if cell == 1:
-                all_points.add((x, y))
-    dist = 0
-    for start, dest in itertools.combinations(all_points, 2):
-        dist += abs(start[0] - dest[0]) + abs(start[1] - dest[1])
-    return dist
-
-
-aoc_helper.lazy_test(day=11, year=2023, parse=parse_raw, solution=part_one)
-
-
-# providing this default is somewhat of a hack - there isn't any other way to
-# force type inference to happen, AFAIK - but this won't work with standard
-# collections (list, set, dict, tuple)
-def part_two(data=data):
+def part_one(data=data, scale=2):
     empty_cols = set()
     empty_rows = set()
     for y, row in enumerate(data.data):
@@ -99,7 +54,7 @@ def part_two(data=data):
         dist += (
             abs(start[0] - dest[0])
             + abs(start[1] - dest[1])
-            + 999999
+            + (scale - 1)
             * (
                 len(
                     [
@@ -118,6 +73,16 @@ def part_two(data=data):
             )
         )
     return dist
+
+
+aoc_helper.lazy_test(day=11, year=2023, parse=parse_raw, solution=part_one)
+
+
+# providing this default is somewhat of a hack - there isn't any other way to
+# force type inference to happen, AFAIK - but this won't work with standard
+# collections (list, set, dict, tuple)
+def part_two(data=data):
+    return part_one(data, 1_000_000)
 
 
 # aoc_helper.lazy_test(day=11, year=2023, parse=parse_raw, solution=part_two)
