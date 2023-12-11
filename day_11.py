@@ -36,42 +36,27 @@ data = parse_raw(raw)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_one(data=data, scale=2):
-    empty_cols = set()
-    empty_rows = set()
-    for y, row in enumerate(data.data):
-        if row.count(1) == 0:
-            empty_rows.add(y)
-    for col in range(data[0].len()):
-        if all(row[col] == 0 for row in data.data):
-            empty_cols.add(col)
-    all_points = set()
-    for y, row in enumerate(data.data):
-        for x, cell in enumerate(row):
-            if cell == 1:
-                all_points.add((x, y))
     dist = 0
-    for start, dest in itertools.combinations(all_points, 2):
-        dist += (
-            abs(start[0] - dest[0])
-            + abs(start[1] - dest[1])
-            + (scale - 1)
-            * (
-                len(
-                    [
-                        empty
-                        for empty in empty_cols
-                        if min(start[0], dest[0]) < empty < max(start[0], dest[0])
-                    ]
-                )
-                + len(
-                    [
-                        empty
-                        for empty in empty_rows
-                        if min(start[1], dest[1]) < empty < max(start[1], dest[1])
-                    ]
-                )
-            )
-        )
+    points_captured = 0
+    distance_travelled = 0
+    for row in data.data:
+        points_in_row = row.sum()
+        dist += distance_travelled * points_in_row
+        if points_in_row == 0:
+            distance_travelled += scale * points_captured
+        else:
+            points_captured += points_in_row
+            distance_travelled += points_captured
+    points_captured = 0
+    distance_travelled = 0
+    for row in data.transpose().data:
+        points_in_col = row.sum()
+        dist += distance_travelled * points_in_col
+        if points_in_col == 0:
+            distance_travelled += scale * points_captured
+        else:
+            points_captured += points_in_col
+            distance_travelled += points_captured
     return dist
 
 
