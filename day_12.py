@@ -81,16 +81,7 @@ def part_one(data=data):
     for record, nums in data:
         to_replace = record.count(2)
         necessary_sum = sum(nums) - record.count(1)
-        for replacements in product(range(2), repeat=to_replace):
-            if sum(replacements) != necessary_sum:
-                continue
-            new_record = record.copy()
-            replacements = iter(replacements)
-            for i, val in new_record.enumerated():
-                if val == 2:
-                    new_record[i] = next(replacements)
-            if runs(new_record, nums):
-                total += 1
+        total += search(tuple(record), None, tuple(nums))
     return total
 
 
