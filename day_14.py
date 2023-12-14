@@ -114,9 +114,6 @@ def part_two(data=data):
             cycle_length = i - cycle_start
             remaining = 1000000000 - cycle_start
             remaining %= cycle_length
-            for n, grid in idx_to_grid.items():
-                print(n, load(grid))
-            print(i, load(cycle_result))
             return load(idx_to_grid[remaining + cycle_start])
         else:
             results[frozen] = i
