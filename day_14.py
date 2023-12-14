@@ -1,3 +1,4 @@
+import itertools
 from collections import Counter, defaultdict, deque
 
 import aoc_helper
@@ -32,36 +33,49 @@ data = parse_raw(raw)
 
 
 def tilt_up(grid: Grid) -> Grid:
-    new_grid = Grid(grid.data.deepcopy())
-    for y in range(new_grid.data.len()):
-        target_row = new_grid[y]
-        for x, cell in target_row.enumerated():
-            if cell == 0:
-                # watch for rolling rocks
-                for ny in range(y, new_grid.data.len()):
-                    if new_grid[ny][x] == 1:
-                        # found one
-                        target_row[x] = 1
-                        new_grid[ny][x] = 0
-                        break
-                    elif new_grid[ny][x] == 2:
-                        # found a stationary rock
-                        break
-    return new_grid
+    return tilt_left(grid.transpose()).transpose()
 
 
 def tilt_left(grid: Grid) -> Grid:
-    return tilt_up(grid.transpose()).transpose()
+    return Grid(
+        list(
+            [
+                list(
+                    [
+                        i
+                        for is_stationary, row in itertools.groupby(
+                            row, lambda i: i == 2
+                        )
+                        for i in (row if is_stationary else sorted(row, reverse=True))
+                    ]
+                )
+                for row in grid.data
+            ]
+        )
+    )
 
 
 def tilt_right(grid: Grid) -> Grid:
-    return tilt_up(grid.rotate_anticlockwise()).rotate_clockwise()
+    return Grid(
+        list(
+            [
+                list(
+                    [
+                        i
+                        for is_stationary, row in itertools.groupby(
+                            row, lambda i: i == 2
+                        )
+                        for i in (row if is_stationary else sorted(row))
+                    ]
+                )
+                for row in grid.data
+            ]
+        )
+    )
 
 
 def tilt_down(grid: Grid) -> Grid:
-    flipped = Grid(grid.data.deepcopy()[::-1])
-    flipped = tilt_up(flipped)
-    return Grid(flipped.data[::-1])
+    return tilt_right(grid.transpose()).transpose()
 
 
 def load(grid: Grid) -> int:
