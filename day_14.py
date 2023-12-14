@@ -39,18 +39,12 @@ def tilt_up(grid: Grid) -> Grid:
 def tilt_left(grid: Grid) -> Grid:
     return Grid(
         list(
-            [
-                list(
-                    [
-                        i
-                        for is_stationary, row in itertools.groupby(
-                            row, lambda i: i == 2
-                        )
-                        for i in (row if is_stationary else sorted(row, reverse=True))
-                    ]
-                )
-                for row in grid.data
-            ]
+            list(
+                i
+                for is_stationary, row in itertools.groupby(row, lambda i: i == 2)
+                for i in (row if is_stationary else sorted(row, reverse=True))
+            )
+            for row in grid.data
         )
     )
 
@@ -58,18 +52,12 @@ def tilt_left(grid: Grid) -> Grid:
 def tilt_right(grid: Grid) -> Grid:
     return Grid(
         list(
-            [
-                list(
-                    [
-                        i
-                        for is_stationary, row in itertools.groupby(
-                            row, lambda i: i == 2
-                        )
-                        for i in (row if is_stationary else sorted(row))
-                    ]
-                )
-                for row in grid.data
-            ]
+            list(
+                i
+                for is_stationary, row in itertools.groupby(row, lambda i: i == 2)
+                for i in (row if is_stationary else sorted(row))
+            )
+            for row in grid.data
         )
     )
 
