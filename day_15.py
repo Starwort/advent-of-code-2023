@@ -1,4 +1,4 @@
-from collections import defaultdict, deque, Counter
+from collections import Counter, defaultdict, deque
 
 import aoc_helper
 from aoc_helper import (
@@ -15,8 +15,8 @@ from aoc_helper import (
     iter,
     list,
     map,
-    range,
     multirange,
+    range,
     search,
     tail_call,
 )
@@ -54,21 +54,19 @@ aoc_helper.lazy_test(day=15, year=2023, parse=parse_raw, solution=part_one)
 # force type inference to happen, AFAIK - but this won't work with standard
 # collections (list, set, dict, tuple)
 def part_two(data=data):
-    lenses = [{} for _ in range(256)]
+    boxes = [{} for _ in range(256)]
     for instruction in data:
         if "=" in instruction:
-            focal_length = extract_ints(instruction)[-1]
-            lenses[hash(instruction.split("=")[0])][
-                instruction.split("=")[0]
-            ] = focal_length
+            box, focal_length = instruction.split("=")
+            boxes[hash(box)][box] = focal_length
         if "-" in instruction:
-            if instruction[:-1] in lenses[hash(instruction[:-1])]:
-                del lenses[hash(instruction[:-1])][instruction[:-1]]
-    total = 0
-    for x, lens in enumerate(lenses, 1):
-        for i, focal_length in enumerate(lens.values(), 1):
-            total += i * focal_length * x
-    return total
+            box = instruction[:-1]
+            boxes[hash(box)].pop(box, None)
+    return sum(
+        i * int(focal_length) * box
+        for box, lens in enumerate(boxes, 1)
+        for i, focal_length in enumerate(lens.values(), 1)
+    )
 
 
 aoc_helper.lazy_test(day=15, year=2023, parse=parse_raw, solution=part_two)
