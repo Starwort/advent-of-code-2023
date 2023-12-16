@@ -33,7 +33,7 @@ data = parse_raw(raw)
 
 def laser(data: Grid[str], x: int, y: int, dx: int, dy: int):
     beams = deque([(x, y, dx, dy)])
-    energised = Grid[bool](list(list(False for _ in row) for row in data.data))
+    energised = {(x, y)}
     explored = set()
     while beams:
         x, y, dx, dy = beams.popleft()
@@ -41,7 +41,7 @@ def laser(data: Grid[str], x: int, y: int, dx: int, dy: int):
             continue
         explored.add((x, y, dx, dy))
         while y in range(len(data.data)) and x in range(len(data[y])):
-            energised[y][x] = True
+            energised.add((x, y))
             if data[y][x] != ".":
                 break
             x += dx
@@ -62,7 +62,7 @@ def laser(data: Grid[str], x: int, y: int, dx: int, dy: int):
             beams.append((x - 1, y, -1, 0))
         else:
             beams.append((x + dx, y + dy, dx, dy))
-    return energised.data.mapped(sum).sum()
+    return len(energised)
 
 
 # providing this default is somewhat of a hack - there isn't any other way to
