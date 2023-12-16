@@ -32,33 +32,36 @@ data = parse_raw(raw)
 
 
 def laser(data: Grid[str], x: int, y: int, dx: int, dy: int):
-    beams = [(x, y, dx, dy)]
+    beams = deque([(x, y, dx, dy)])
     energised = Grid[bool](list(list(False for _ in row) for row in data.data))
     explored = set()
     while beams:
-        next_beams = []
-        for x, y, dx, dy in beams:
-            if (x, y, dx, dy) in explored:
-                continue
-            explored.add((x, y, dx, dy))
-            if not (y in range(len(data.data)) and x in range(len(data[y]))):
-                continue
+        x, y, dx, dy = beams.popleft()
+        if (x, y, dx, dy) in explored:
+            continue
+        explored.add((x, y, dx, dy))
+        while y in range(len(data.data)) and x in range(len(data[y])):
             energised[y][x] = True
-            if data[y][x] == "/":
-                dx, dy = -dy, -dx
-                next_beams.append((x + dx, y + dy, dx, dy))
-            elif data[y][x] == "\\":
-                dx, dy = dy, dx
-                next_beams.append((x + dx, y + dy, dx, dy))
-            elif data[y][x] == "|" and dx != 0:
-                next_beams.append((x, y + 1, 0, 1))
-                next_beams.append((x, y - 1, 0, -1))
-            elif data[y][x] == "-" and dy != 0:
-                next_beams.append((x + 1, y, 1, 0))
-                next_beams.append((x - 1, y, -1, 0))
-            else:
-                next_beams.append((x + dx, y + dy, dx, dy))
-        beams = next_beams
+            if data[y][x] != ".":
+                break
+            x += dx
+            y += dy
+        else:
+            continue
+        if data[y][x] == "/":
+            dx, dy = -dy, -dx
+            beams.append((x + dx, y + dy, dx, dy))
+        elif data[y][x] == "\\":
+            dx, dy = dy, dx
+            beams.append((x + dx, y + dy, dx, dy))
+        elif data[y][x] == "|" and dx != 0:
+            beams.append((x, y + 1, 0, 1))
+            beams.append((x, y - 1, 0, -1))
+        elif data[y][x] == "-" and dy != 0:
+            beams.append((x + 1, y, 1, 0))
+            beams.append((x - 1, y, -1, 0))
+        else:
+            beams.append((x + dx, y + dy, dx, dy))
     return energised.data.mapped(sum).sum()
 
 
