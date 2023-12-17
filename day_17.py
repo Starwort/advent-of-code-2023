@@ -31,24 +31,20 @@ def parse_raw(raw: str):
 data = parse_raw(raw)
 
 
-def next_state(max_rx: int = 3):
+def next_state(min_rx: int = 0, max_rx: int = 3):
     def next_state(
         state: tuple[int, int], dx: int, dy: int, _prev_cell: int, _new_cell: int
     ):
         rx, ry = state
         if (
-            0 < rx < max_rx
-            and dx < 0
-            or -max_rx < rx < 0
-            and dx > 0
-            or abs(rx) == max_rx
-            and dx != 0
-            or 0 < ry < max_rx
-            and dy < 0
-            or -max_rx < ry < 0
-            and dy > 0
-            or abs(ry) == max_rx
-            and dy != 0
+            (0 < rx < max_rx and dx < 0)
+            or (-max_rx < rx < 0 and dx > 0)
+            or (abs(rx) == max_rx and dx != 0)
+            or (0 < ry < max_rx and dy < 0)
+            or (-max_rx < ry < 0 and dy > 0)
+            or (abs(ry) == max_rx and dy != 0)
+            or (rx != 0 and abs(rx) < min_rx and dx == 0)
+            or (ry != 0 and abs(ry) < min_rx and dy == 0)
         ):
             return None
         return (rx * dx + dx, ry * dy + dy)
