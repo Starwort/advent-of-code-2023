@@ -37,17 +37,15 @@ def next_state(min_rx: int = 0, max_rx: int = 3):
     ):
         rx, ry = state
         if (
-            (0 < rx < max_rx and dx < 0)
-            or (-max_rx < rx < 0 and dx > 0)
-            or (abs(rx) == max_rx and dx != 0)
-            or (0 < ry < max_rx and dy < 0)
-            or (-max_rx < ry < 0 and dy > 0)
-            or (abs(ry) == max_rx and dy != 0)
-            or (rx != 0 and abs(rx) < min_rx and dx == 0)
-            or (ry != 0 and abs(ry) < min_rx and dy == 0)
+            (dx > 0 and (rx >= max_rx or rx < 0))
+            or (dx < 0 and (rx <= -max_rx or rx > 0))
+            or (dy > 0 and (ry >= max_rx or ry < 0))
+            or (dy < 0 and (ry <= -max_rx or ry > 0))
+            or (rx != 0 and rx < min_rx and rx > -min_rx and dx == 0)
+            or (ry != 0 and ry < min_rx and ry > -min_rx and dy == 0)
         ):
             return None
-        return (rx * dx + dx, ry * dy + dy)
+        return (rx * abs(dx) + dx, ry * abs(dy) + dy)
 
     return next_state
 
@@ -71,11 +69,47 @@ def part_two(data=data):
     return data.pathfind(
         initial_state=(0, 0),
         next_state=next_state(4, 10),
-        is_valid_end=lambda state: (abs(state[0]) >= 4 or state[0] == 0)
-        and (abs(state[1]) >= 4 or state[1] == 0),
+        is_valid_end=lambda state: (
+            (state[0] == 0 or abs(state[0]) >= 4)
+            and (state[1] == 0 or abs(state[1]) >= 4)
+        ),
         cost_function=lambda _, j: j,
     )
 
+
+assert (
+    part_two(
+        parse_raw(
+            """2413432311323
+3215453535623
+3255245654254
+3446585845452
+4546657867536
+1438598798454
+4457876987766
+3637877979653
+4654967986887
+4564679986453
+1224686865563
+2546548887735
+4322674655533"""
+        )
+    )
+    == 94
+)
+
+assert (
+    part_two(
+        parse_raw(
+            """111111111111
+999999999991
+999999999991
+999999999991
+999999999991"""
+        )
+    )
+    == 71
+)
 
 aoc_helper.lazy_test(
     day=17,
