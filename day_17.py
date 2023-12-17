@@ -70,7 +70,7 @@ aoc_helper.lazy_test(day=17, year=2023, parse=parse_raw, solution=part_one)
 def part_two(data=data):
     return data.pathfind(
         initial_state=(0, 0),
-        next_state=next_state(10),
+        next_state=next_state(4, 10),
         is_valid_end=lambda state: (abs(state[0]) >= 4 or state[0] == 0)
         and (abs(state[1]) >= 4 or state[1] == 0),
         cost_function=lambda _, j: j,
