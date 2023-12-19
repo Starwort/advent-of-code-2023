@@ -97,12 +97,14 @@ def parse_workflow(raw: str):
 
 def parse_raw(
     raw: str,
-) -> tuple[dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]], list[dict[str,int]]]:
+) -> tuple[
+    dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]], list[dict[str, int]]
+]:
     workflows, ratings = raw.split("\n\n")
     workflows2 = {
         k: (v1, v2) for k, v1, v2 in list(workflows.splitlines()).mapped(parse_workflow)
     }
-    ratings2: list[dict[str,int]] = list(ratings.splitlines()).mapped(extract_ints).starmapped(lambda x, m, a, s: {"x": x, "m": m, "a": a, "s": s})  # type: ignore
+    ratings2: list[dict[str, int]] = list(ratings.splitlines()).mapped(extract_ints).starmapped(lambda x, m, a, s: {"x": x, "m": m, "a": a, "s": s})  # type: ignore
     return workflows2, ratings2
 
 
@@ -115,7 +117,7 @@ data = parse_raw(raw)
 def part_one(
     data: tuple[
         dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]],
-        list[dict[str,int]],
+        list[dict[str, int]],
     ] = data
 ):
     workflows, ratings = data
@@ -153,7 +155,7 @@ aoc_helper.lazy_test(day=19, year=2023, parse=parse_raw, solution=part_one)
 def part_two(
     data: tuple[
         dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]],
-        list[dict[str,int]],
+        list[dict[str, int]],
     ] = data
 ):
     workflows, _ = data
@@ -193,12 +195,12 @@ def part_two(
                             rating2 = deepcopy(rating)
                             rating2[var] = range(rating[var].start, val)
                             todo.append((rating2, next))
-                            rating[var] = range(val, rating[var].stop)
+                            rating[var] -= rating2[var]
                         case Gt(var, val):
                             rating2 = deepcopy(rating)
                             rating2[var] = range(val + 1, rating[var].stop)
                             todo.append((rating2, next))
-                            rating[var] = range(rating[var].start, val + 1)
+                            rating[var] -= rating2[var]
                         case _:
                             pass
                 todo.append((rating, default))
