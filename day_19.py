@@ -1,4 +1,4 @@
-from collections import defaultdict, deque, Counter
+from collections import Counter, defaultdict, deque
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import TypedDict
@@ -18,8 +18,8 @@ from aoc_helper import (
     iter,
     list,
     map,
-    range,
     multirange,
+    range,
     search,
     tail_call,
 )
@@ -95,21 +95,14 @@ def parse_workflow(raw: str):
     return name, rules2, default
 
 
-class Ratings(TypedDict):
-    x: int
-    m: int
-    a: int
-    s: int
-
-
 def parse_raw(
     raw: str,
-) -> tuple[dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]], list[Ratings],]:
+) -> tuple[dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]], list[dict[str,int]]]:
     workflows, ratings = raw.split("\n\n")
     workflows2 = {
         k: (v1, v2) for k, v1, v2 in list(workflows.splitlines()).mapped(parse_workflow)
     }
-    ratings2: list[Ratings] = list(ratings.splitlines()).mapped(extract_ints).starmapped(lambda x, m, a, s: {"x": x, "m": m, "a": a, "s": s})  # type: ignore
+    ratings2: list[dict[str,int]] = list(ratings.splitlines()).mapped(extract_ints).starmapped(lambda x, m, a, s: {"x": x, "m": m, "a": a, "s": s})  # type: ignore
     return workflows2, ratings2
 
 
@@ -122,7 +115,7 @@ data = parse_raw(raw)
 def part_one(
     data: tuple[
         dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]],
-        list[Ratings],
+        list[dict[str,int]],
     ] = data
 ):
     workflows, ratings = data
@@ -160,7 +153,7 @@ aoc_helper.lazy_test(day=19, year=2023, parse=parse_raw, solution=part_one)
 def part_two(
     data: tuple[
         dict[str, tuple[list[tuple[Condition, Outcome]], Outcome]],
-        list[Ratings],
+        list[dict[str,int]],
     ] = data
 ):
     workflows, _ = data
