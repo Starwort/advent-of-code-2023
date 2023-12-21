@@ -134,7 +134,6 @@ def part_two(data=data, target=26501365):
     a0 = explore(65, data)
     a1 = explore(65 + 131, data)
     a2 = explore(65 + 131 * 2, data)
-    print(a0, a1, a2)
 
     b0, b1, b2 = a0, a1 - a0, a2 - a1
     n = (target - 65) // 131
