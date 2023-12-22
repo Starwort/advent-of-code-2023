@@ -41,15 +41,15 @@ def fall(data=data):
     graph = list([list() for _ in new_data])
     for i, brick in new_data.enumerated():
         (sx, sy, sz), (ex, ey, ez) = brick
-        this_rests_on = set()
-        min_brick_height = 0
-        for x in irange(sx, ex):
-            for y in irange(sy, ey):
-                if heights[x, y][0] > min_brick_height:
-                    min_brick_height = heights[x, y][0]
-                    this_rests_on = {heights[x, y][1]}
-                elif heights[x, y][0] == min_brick_height and heights[x, y][1] != -1:
-                    this_rests_on.add(heights[x, y][1])
+        min_brick_height = max(
+            heights[x, y][0] for x in irange(sx, ex) for y in irange(sy, ey)
+        )
+        this_rests_on = {
+            heights[x, y][1]
+            for x in irange(sx, ex)
+            for y in irange(sy, ey)
+            if heights[x, y][0] == min_brick_height and heights[x, y][1] != -1
+        }
         if len(this_rests_on) == 1:
             load_bearing.update(this_rests_on)
         for resting_on in this_rests_on:
