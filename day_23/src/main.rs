@@ -1,5 +1,3 @@
-use std::collections::BinaryHeap;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum GridInfo {
     Empty,
@@ -22,7 +20,7 @@ fn main() {
                 'v' => GridInfo::SlopeDown,
                 '<' => GridInfo::SlopeLeft,
                 '>' => GridInfo::SlopeRight,
-                _ => panic!("Bad input: found '{}'", c),
+                _ => panic!("Bad input: found '{c}'"),
             };
         }
     }
@@ -64,18 +62,18 @@ fn main() {
         let mut outputs = Vec::new();
         let mut todo = Vec::new();
         for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
-            let nx = x as isize + dx;
-            let ny = y as isize + dy;
-            if nx < 0 || nx > 140 || ny < 0 || ny > 140 {
+            let nx = x.wrapping_add_signed(dx);
+            let ny = y.wrapping_add_signed(dy);
+            if nx > 140 || ny > 140 {
                 continue;
             }
             todo.push((
-                nx as usize,
-                ny as usize,
+                nx,
+                ny,
                 1,
                 dx,
                 dy,
-                match grid[ny as usize][nx as usize] {
+                match grid[ny][nx] {
                     GridInfo::Empty => false,
                     GridInfo::SlopeUp => dy != -1,
                     GridInfo::SlopeDown => dy != 1,
@@ -99,7 +97,6 @@ fn main() {
             }
         }
         outputs.sort_unstable_by_key(|&(_, dist, _)| dist);
-        outputs.reverse();
         paths.push(outputs);
     }
     let paths = paths;
@@ -108,58 +105,35 @@ fn main() {
 }
 
 fn solve(paths: &[Vec<(usize, usize, bool)>], p2: bool) -> usize {
-    let mut todo = BinaryHeap::from([(
-        paths
-            .iter()
-            .map(|paths| {
-                paths
-                    .iter()
-                    .filter_map(
-                        |&(_, dist, p2_only)| {
-                            if p2 || !p2_only {
-                                Some(dist)
-                            } else {
-                                None
-                            }
-                        },
-                    )
-                    .max()
-                    .unwrap()
-            })
-            .sum::<usize>(), // heuristic
+    let path_maxes = paths
+        .iter()
+        .map(|paths| {
+            paths
+                .iter()
+                .filter_map(
+                    |&(_, dist, p2_only)| {
+                        if p2 || !p2_only {
+                            Some(dist)
+                        } else {
+                            None
+                        }
+                    },
+                )
+                .max()
+                .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let mut todo = vec![(
         0usize, // distance
         0usize, // current node
         0u64,   // visited
-    )]);
+        path_maxes.iter().copied().sum::<usize>(),
+    )];
     let mut best = 0;
 
-    while let Some((_, dist, node, visited)) = todo.pop() {
+    while let Some((dist, node, visited, best_possible)) = todo.pop() {
         let this_visit = 1 << node;
-        if visited & this_visit != 0 {
-            continue;
-        }
-        let best_possible = dist
-            + paths
-                .iter()
-                .enumerate()
-                .filter_map(|(i, paths)| {
-                    if visited & (1 << i) == 0 {
-                        paths
-                            .iter()
-                            .filter_map(|&(to, dist, p2_only)| {
-                                if (p2 || !p2_only) && visited & (1 << to) == 0 {
-                                    Some(dist)
-                                } else {
-                                    None
-                                }
-                            })
-                            .max()
-                    } else {
-                        None
-                    }
-                })
-                .sum::<usize>();
-        if best_possible <= best {
+        if visited & this_visit != 0 || best_possible <= best {
             continue;
         }
         let visited = visited | this_visit;
@@ -169,9 +143,16 @@ fn solve(paths: &[Vec<(usize, usize, bool)>], p2: bool) -> usize {
             continue;
         }
 
+        let best_possible = best_possible - path_maxes[node];
+
         for (next_node, next_dist, p2_only) in &paths[node] {
             if (p2 || !p2_only) && visited & (1 << next_node) == 0 {
-                todo.push((dist + next_dist, dist + next_dist, *next_node, visited));
+                todo.push((
+                    dist + next_dist,
+                    *next_node,
+                    visited,
+                    best_possible + next_dist,
+                ));
             }
         }
     }
