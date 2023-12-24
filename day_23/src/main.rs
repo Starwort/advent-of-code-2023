@@ -100,29 +100,15 @@ fn main() {
         paths.push(outputs);
     }
     let paths = paths;
-    println!("{}", solve(&paths, false));
-    println!("{}", solve(&paths, true));
-}
-
-fn solve(paths: &[Vec<(usize, usize, bool)>], p2: bool) -> usize {
     let path_maxes = paths
         .iter()
-        .map(|paths| {
-            paths
-                .iter()
-                .filter_map(
-                    |&(_, dist, p2_only)| {
-                        if p2 || !p2_only {
-                            Some(dist)
-                        } else {
-                            None
-                        }
-                    },
-                )
-                .max()
-                .unwrap()
-        })
+        .map(|paths| paths.iter().map(|&(_, dist, _)| dist).max().unwrap())
         .collect::<Vec<_>>();
+    println!("{}", solve(&paths, &path_maxes, false));
+    println!("{}", solve(&paths, &path_maxes, true));
+}
+
+fn solve(paths: &[Vec<(usize, usize, bool)>], path_maxes: &[usize], p2: bool) -> usize {
     let mut todo = vec![(
         0usize, // distance
         0usize, // current node
