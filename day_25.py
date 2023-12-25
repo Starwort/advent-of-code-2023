@@ -36,10 +36,7 @@ def parse_raw(raw: str):
         connections[k] |= vs
         for v in vs:
             connections[v] |= {k}
-    graph = Graph()
-    graph.add_nodes_from(connections)
-    graph.add_edges_from((k, v) for k, vs in connections.items() for v in vs)
-    return graph
+    return Graph(connections)
 
 
 data = parse_raw(raw)
