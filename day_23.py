@@ -146,10 +146,10 @@ def part_two(data=data):
     sx, sy = (data[0].index("."), int())
     tx, ty = (data[-1].index("."), len(data.data) - 1)
     # first find nodes that are surrounded by 3 slopes
-    nodes_of_interest = set[tuple[int, int]]()
-    for x in range(len(data[0])):
-        for y in range(len(data.data)):
-            if data[y][x] == "#":
+    nodes_of_interest = list[tuple[int, int]]()
+    for y, row in data.data.enumerated():
+        for x, cell in row.enumerated():
+            if cell != ".":
                 continue
             if (
                 data.orthogonal_neighbours(x, y)
@@ -157,87 +157,72 @@ def part_two(data=data):
                 .len()
                 != 2
             ):
-                nodes_of_interest.add((x, y))
-    print(len(nodes_of_interest))
+                nodes_of_interest.append((x, y))
     # for each node, find the paths to the nearby nodes
-    paths = {}
-    for node in nodes_of_interest:
-        outputs = {}
+    paths = []
+    for i, node in nodes_of_interest.enumerated():
+        if i == 0:
+            assert node == (sx, sy), f"{i=} {node=} {(sx, sy)=}"
+        elif i == len(nodes_of_interest) - 1:
+            assert node == (tx, ty), f"{i=} {node=} {(tx, ty)=}"
+        outputs = []
         todo = []
         for dx, dy in ((-1, 0), (1, 0), (0, 1), (0, -1)):
             x = node[0] + dx
             y = node[1] + dy
-            if y < 0 or y > ty:
-                continue
-            if data[y][x] == "#":
+            if y < 0 or y > ty or data[y][x] == "#":
                 continue
             todo.append(((x, y), 1, (dx, dy)))
         while todo:
-            pos, dist, last_dir = todo.pop()
-            x, y = pos
+            node, dist, (dx, dy) = todo.pop()
+            x, y = node
             if y < 0 or y > ty:
                 continue
-            if pos in nodes_of_interest:
-                outputs[pos] = dist
+            if node in nodes_of_interest:
+                outputs.append((nodes_of_interest.index(node), dist))
                 continue
-            for (nx, ny), val in data.orthogonal_neighbours(x, y):
-                dx = x - nx
-                dy = y - ny
-                if (x - nx, y - ny) == last_dir:
-                    continue
-                if val == "#":
-                    continue
-                todo.append(((nx, ny), dist + 1, (-dx, -dy)))
-        paths[node] = outputs
-    todo = [
-        (
-            # (-sum(max(paths.values()) for paths in paths.values()), sx + sy),
-            int(),
-            (sx, sy),
-            frozenset(),
-        )
-    ]
+            for dx, dy in ((dx, dy), (dy, -dx), (-dy, dx)):
+                nx = x + dx
+                ny = y + dy
+                if data[ny][nx] != "#":
+                    todo.append(((nx, ny), dist + 1, (dx, dy)))
+        outputs.sort(key=lambda i: i[1])
+        paths.append(outputs)
+    path_maxes = [max(i[1] for i in paths) for paths in paths]
+    todo = PrioQueue(
+        [
+            (
+                -sum(path_maxes),
+                int(),
+                int(),
+                int(),
+            )
+        ]
+    )
 
     best = 0
-    done = {}
-    printed = perf_counter()
-    while todo:
-        dist, pos, seen = todo.pop()
-        # for (_heuristic, _), dist, pos, seen in todo:
-        if pos in seen:
+    target = len(paths) - 1
+    for best_possible, dist, node, visited in todo:
+        this_visit = 1 << node
+        if visited & this_visit or best_possible < best:
             continue
-        if (pos, seen) in done and done[pos, seen] >= dist:
-            continue
-        done[pos, seen] = dist
-        unseen_nodes = nodes_of_interest - seen
-        best_possible = dist + sum(max(paths[pos].values()) for pos in unseen_nodes)
-        if best_possible < best:
-            continue
+        visited |= this_visit
 
-        if len(todo) % 5 == 0 and perf_counter() - printed > 1:
-            print(len(todo), best, dist, pos)
-            printed = perf_counter()
-        if pos == (tx, ty):
+        if node == target:
             if dist > best:
                 best = dist
                 print("-- best --", best)
             continue
-        next_seen = seen | {pos}
-        for next_pos, next_dist in sorted(paths[pos].items(), key=lambda i: i[1]):
-            todo.append(
+
+        best_possible += path_maxes[node]
+
+        for next_pos, next_dist in paths[node]:
+            todo.push(
                 (
-                    # (
-                    #     -dist
-                    #     - next_dist
-                    #     - sum(
-                    #         max(paths[pos].values())
-                    #         for pos in unseen_nodes - {next_pos}
-                    #     ),
-                    #     abs(next_pos[0] - tx) + abs(next_pos[1] - ty),
-                    # ),
+                    best_possible - next_dist,
                     dist + next_dist,
                     next_pos,
-                    next_seen,
+                    visited,
                 )
             )
     # assert best > 5638, best
