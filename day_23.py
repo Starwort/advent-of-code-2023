@@ -92,7 +92,7 @@ def part_one(data=data):
     target = len(paths) - 1
     for best_possible, dist, node, visited in todo:
         this_visit = 1 << node
-        if visited & this_visit or best_possible < best:
+        if visited & this_visit or -best_possible < best:
             continue
         visited |= this_visit
 
@@ -138,7 +138,7 @@ def part_two(data=data):
     target = len(paths) - 1
     for best_possible, dist, node, visited in todo:
         this_visit = 1 << node
-        if visited & this_visit or best_possible < best:
+        if visited & this_visit or -best_possible <= best:
             continue
         visited |= this_visit
 
