@@ -108,7 +108,7 @@ def solve(paths: list[list[tuple[int, int, bool]]], path_maxes: list[int], p2: b
         best_possible += path_maxes[node]
 
         for next_pos, next_dist, p2_only in paths[node]:
-            if p2_only and not p2:
+            if p2_only and not p2 or visited & (1 << next_pos):
                 continue
             todo.push(
                 (
