@@ -4,7 +4,7 @@ from aoc_helper import Grid, PrioQueue, list
 raw = aoc_helper.fetch(23, 2023)
 
 
-def parse_raw(raw: str) -> tuple[list[tuple[int, int, bool]], list[int]]:
+def parse_raw(raw: str) -> tuple[list[list[tuple[int, int, bool]]], list[int]]:
     data = Grid.from_string(raw, str)
 
     sx, sy = (data[0].index("."), int())
@@ -36,9 +36,22 @@ def parse_raw(raw: str) -> tuple[list[tuple[int, int, bool]], list[int]]:
             y = node[1] + dy
             if y < 0 or y > ty or data[y][x] == "#":
                 continue
-            todo.append(((x, y), 1, (dx, dy)))
+            todo.append(
+                (
+                    (x, y),
+                    1,
+                    (dx, dy),
+                    {
+                        ".": False,
+                        "^": dy != -1,
+                        "v": dy != 1,
+                        "<": dx != -1,
+                        ">": dx != 1,
+                    }[data[y][x]],
+                )
+            )
         while todo:
-            node, dist, (dx, dy) = todo.pop()
+            node, dist, (dx, dy), p2_only = todo.pop()
             x, y = node
             if y < 0 or y > ty:
                 continue
@@ -47,13 +60,7 @@ def parse_raw(raw: str) -> tuple[list[tuple[int, int, bool]], list[int]]:
                     (
                         nodes_of_interest.index(node),
                         dist,
-                        {
-                            ".": False,
-                            "^": dy != -1,
-                            "v": dy != 1,
-                            "<": dx != -1,
-                            ">": dx != 1,
-                        }[data[y][x]],
+                        p2_only,
                     )
                 )
                 continue
@@ -61,7 +68,7 @@ def parse_raw(raw: str) -> tuple[list[tuple[int, int, bool]], list[int]]:
                 nx = x + dx
                 ny = y + dy
                 if data[ny][nx] != "#":
-                    todo.append(((nx, ny), dist + 1, (dx, dy)))
+                    todo.append(((nx, ny), dist + 1, (dx, dy), p2_only))
         outputs.sort(key=lambda i: i[1])
         paths.append(outputs)
     path_maxes = list(max(i[1] for i in paths) for paths in paths)
@@ -72,57 +79,7 @@ def parse_raw(raw: str) -> tuple[list[tuple[int, int, bool]], list[int]]:
 data = parse_raw(raw)
 
 
-# providing this default is somewhat of a hack - there isn't any other way to
-# force type inference to happen, AFAIK - but this won't work with standard
-# collections (list, set, dict, tuple)
-def part_one(data=data):
-    paths, path_maxes = data
-    todo = PrioQueue(
-        [
-            (
-                -sum(path_maxes),
-                int(),
-                int(),
-                int(),
-            )
-        ]
-    )
-
-    best = 0
-    target = len(paths) - 1
-    for best_possible, dist, node, visited in todo:
-        this_visit = 1 << node
-        if visited & this_visit or -best_possible < best:
-            continue
-        visited |= this_visit
-
-        if node == target:
-            if dist > best:
-                best = dist
-                print("-- best --", best)
-            continue
-
-        best_possible += path_maxes[node]
-
-        for next_pos, next_dist, p2_only in paths[node]:
-            if p2_only:
-                continue
-            todo.push(
-                (
-                    best_possible - next_dist,
-                    dist + next_dist,
-                    next_pos,
-                    visited,
-                )
-            )
-    return best
-
-
-aoc_helper.lazy_test(day=23, year=2023, parse=parse_raw, solution=part_one)
-
-
-def part_two(data=data):
-    paths, path_maxes = data
+def solve(paths: list[list[tuple[int, int, bool]]], path_maxes: list[int], p2: bool):
     todo = PrioQueue(
         [
             (
@@ -150,7 +107,9 @@ def part_two(data=data):
 
         best_possible += path_maxes[node]
 
-        for next_pos, next_dist, _p2_only in paths[node]:
+        for next_pos, next_dist, p2_only in paths[node]:
+            if p2_only and not p2:
+                continue
             todo.push(
                 (
                     best_possible - next_dist,
@@ -160,6 +119,22 @@ def part_two(data=data):
                 )
             )
     return best
+
+
+# providing this default is somewhat of a hack - there isn't any other way to
+# force type inference to happen, AFAIK - but this won't work with standard
+# collections (list, set, dict, tuple)
+def part_one(data=data):
+    paths, path_maxes = data
+    return solve(paths, path_maxes, False)
+
+
+aoc_helper.lazy_test(day=23, year=2023, parse=parse_raw, solution=part_one)
+
+
+def part_two(data=data):
+    paths, path_maxes = data
+    return solve(paths, path_maxes, True)
 
 
 aoc_helper.lazy_test(day=23, year=2023, parse=parse_raw, solution=part_two)
