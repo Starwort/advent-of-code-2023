@@ -80,22 +80,20 @@ data = parse_raw(raw)
 
 
 def solve(paths: list[list[tuple[int, int, bool]]], path_maxes: list[int], p2: bool):
-    todo = PrioQueue(
-        [
-            (
-                -sum(path_maxes),
-                int(),
-                int(),
-                int(),
-            )
-        ]
-    )
+    todo = [
+        (
+            sum(path_maxes),
+            int(),
+            int(),
+            int(),
+        )
+    ]
 
     best = 0
     target = len(paths) - 1
     for best_possible, dist, node, visited in todo:
         this_visit = 1 << node
-        if visited & this_visit or -best_possible <= best:
+        if visited & this_visit or best_possible <= best:
             continue
         visited |= this_visit
 
@@ -105,14 +103,14 @@ def solve(paths: list[list[tuple[int, int, bool]]], path_maxes: list[int], p2: b
                 print("-- best --", best)
             continue
 
-        best_possible += path_maxes[node]
+        best_possible -= path_maxes[node]
 
         for next_pos, next_dist, p2_only in paths[node]:
             if p2_only and not p2 or visited & (1 << next_pos):
                 continue
-            todo.push(
+            todo.append(
                 (
-                    best_possible - next_dist,
+                    best_possible + next_dist,
                     dist + next_dist,
                     next_pos,
                     visited,
